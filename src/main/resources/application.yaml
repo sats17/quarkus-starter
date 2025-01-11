@@ -1,0 +1,16 @@
+quarkus:
+  http:
+    port: 8083
+  application:
+    name: geolocation-service
+  otel:
+    exporter:
+      otlp:
+        endpoint: http://localhost:4317
+  rest-client:
+    geocoding-api:
+      url: https://geocoding-api.open-meteo.com
+
+
+
+        

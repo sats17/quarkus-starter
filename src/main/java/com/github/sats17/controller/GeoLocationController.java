@@ -1,8 +1,19 @@
 package com.github.sats17.controller;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
+import com.github.sats17.service.LocationDBService;
+import io.smallrye.jwt.build.Jwt;
+import io.smallrye.jwt.build.JwtClaimsBuilder;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.SecurityContext;
+import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,12 +39,37 @@ public class GeoLocationController {
 	GeocodingService geocodingService;
 
 	@Inject
+	LocationDBService locationDBService;
+
+	@Inject
+	JsonWebToken jwt;
+
+	@Inject
 	ObjectMapper objectMapper;
+
+	@GET
+	@Path("/token")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String getToken() {
+		String token =
+				Jwt.issuer("https://example.com/issuer")
+						.upn("jdoe@quarkus.io")
+						.groups(new HashSet<>(Arrays.asList("User", "Admin")))
+						.claim(Claims.birthdate.name(), "2001-07-13")
+						.sign();
+//		JwtClaimsBuilder builder1 = Jwt.claims();
+//		String token = builder1.claim("customClaim", "custom-value").issuer("https://issuer.org").build();
+		System.out.println(token);
+		return token;
+	}
 
 	@GET
 	@Path("/city/{cityName}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getGeolocationData(@PathParam("cityName") String cityName) {
+	//@RolesAllowed({ "User", "Admin" }) uncomment this if jwt validation required
+	public Response getGeolocationData(@PathParam("cityName") String cityName, @Context SecurityContext securityContext) {
+		//System.out.println(securityContext.isSecure());
+		System.out.println(locationDBService.getAll().toString());
 		String response = geocodingService.getGeoData(cityName, 10, "en", "json");
 
 		// Convert the response to JsonNode using Jackson

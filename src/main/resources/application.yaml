@@ -1,15 +1,45 @@
 quarkus:
   http:
-    port: 8083
+    port: 8084
   application:
     name: geolocation-service
-  otel:
-    exporter:
-      otlp:
-        endpoint: http://localhost:4317
+#  otel:
+#    exporter:
+#      otlp:
+#        endpoint: http://localhost:4317
   rest-client:
     geocoding-api:
       url: https://geocoding-api.open-meteo.com
+
+  native:
+    resources:
+      includes: "publicKey.pem"  # Ensure publicKey.pem is included in the native image
+  log:
+    category:
+      "io.smallrye.jwt":
+        level: DEBUG
+      "io.quarkus.security":
+        level: DEBUG
+  flyway:
+    migrate-at-start: true
+
+mp:
+  jwt:
+    verify:
+      publickey:
+        location: "publicKey.pem"  # Location of the public key used to verify JWTs
+      issuer: "https://example.com/issuer"  # Expected JWT issuer
+
+smallrye:
+  jwt:
+    sign:
+      key:
+        location: "privateKey.pem"
+
+
+
+
+  
 
 
 
